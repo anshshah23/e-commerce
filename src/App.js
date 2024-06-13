@@ -1,14 +1,13 @@
 import React, { Component } from "react";
-import { Routes, Route, Link, BrowserRouter as Router } from 'react-router-dom';
+import { Link, Routes, Route, BrowserRouter as Router } from 'react-router-dom';
 import axios from 'axios';
 import AddProduct from './components/AddProduct';
 import Cart from './components/Cart';
 import Login from './components/Login';
 import ProductList from './components/ProductList';
-import {jwtDecode} from 'jwt-decode'; // Correct capitalization
-
+import ProductDetails from './components/ProductDetails';
 import Context from "./Context";
-
+import { jwtDecode } from 'jwt-decode';
 export default class App extends Component {
   constructor(props) {
     super(props);
@@ -22,11 +21,21 @@ export default class App extends Component {
   }
 
 
+  addProduct = (product, callback) => {
+    let products = this.state.products.slice();
+    products.push(product);
+    this.setState({ products }, () => callback && callback());
+  };
+
   async componentDidMount() {
     let user = localStorage.getItem("user");
+    let cart = localStorage.getItem("cart");
+
     const products = await axios.get('http://localhost:3001/products');
     user = user ? JSON.parse(user) : null;
-    this.setState({ user,  products: products.data });
+    cart = cart ? JSON.parse(cart) : {};
+
+    this.setState({ user, products: products.data, cart });
   }
 
   login = async (email, password) => {
@@ -36,15 +45,15 @@ export default class App extends Component {
     ).catch((res) => {
       return { status: 401, message: 'Unauthorized' }
     })
-  
-    if(res.status === 200) {
+
+    if (res.status === 200) {
       const { email } = jwtDecode(res.data.accessToken); // Corrected capitalization
       const user = {
         email,
         token: res.data.accessToken,
         accessLevel: email === 'admin@example.com' ? 0 : 1
       }
-  
+
       this.setState({ user });
       localStorage.setItem("user", JSON.stringify(user));
       return true;
@@ -52,7 +61,58 @@ export default class App extends Component {
       return false;
     }
   }
-  
+
+  addToCart = cartItem => {
+    let cart = this.state.cart;
+    if (cart[cartItem.id]) {
+      cart[cartItem.id].amount += cartItem.amount;
+    } else {
+      cart[cartItem.id] = cartItem;
+    }
+    if (cart[cartItem.id].amount > cart[cartItem.id].product.stock) {
+      cart[cartItem.id].amount = cart[cartItem.id].product.stock;
+    }
+    localStorage.setItem("cart", JSON.stringify(cart));
+    this.setState({ cart });
+  };
+
+  removeFromCart = cartItemId => {
+    let cart = this.state.cart;
+    delete cart[cartItemId];
+    localStorage.setItem("cart", JSON.stringify(cart));
+    this.setState({ cart });
+  };
+
+  clearCart = () => {
+    let cart = {};
+    localStorage.removeItem("cart");
+    this.setState({ cart });
+  };
+
+  checkout = () => {
+    if (!this.state.user) {
+      this.routerRef.current.history.push("/login");
+      return;
+    }
+
+    const cart = this.state.cart;
+
+    const products = this.state.products.map(p => {
+      if (cart[p.name]) {
+        p.stock = p.stock - cart[p.name].amount;
+
+        axios.put(
+          `http://localhost:3001/products/${p.id}`,
+          { ...p },
+        )
+      }
+      return p;
+    });
+
+    this.setState({ products });
+    this.clearCart();
+  };
+
   logout = e => {
     e.preventDefault();
     this.setState({ user: null });
@@ -95,10 +155,10 @@ export default class App extends Component {
                   <span aria-hidden="true"></span>
                   <span aria-hidden="true"></span>
                   <span aria-hidden="true"></span>
+                  <span aria-hidden="true"></span>
                 </label>
               </div>
-              <div className={`navbar-menu ${
-                this.state.showMenu ? "is-active" : ""
+              <div className={`navbar-menu ${this.state.showMenu ? "is-active" : ""
                 }`}>
                 <Link to="/products" className="navbar-item">
                   Products
@@ -134,6 +194,11 @@ export default class App extends Component {
               <Route exact path="/cart" element={<Cart />} />
               <Route exact path="/add-product" element={<AddProduct />} />
               <Route exact path="/products" element={<ProductList />} />
+              <Route
+                exact
+                path={`/products/${product.id}`}
+                element={<ProductDetails />}
+              />
             </Routes>
           </div>
         </Router>

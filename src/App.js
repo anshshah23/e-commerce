@@ -1,13 +1,15 @@
-import React, { Component } from "react";
+import React, { Component, Suspense } from "react";
 import { Link, Routes, Route, BrowserRouter as Router } from 'react-router-dom';
 import axios from 'axios';
 import AddProduct from './components/AddProduct';
-import Cart from './components/Cart';
 import Login from './components/Login';
 import ProductList from './components/ProductList';
-import ProductDetails from './components/ProductDetails';
 import Context from "./Context";
 import { jwtDecode } from 'jwt-decode';
+
+const ProductDetails = React.lazy(() => import('./components/ProductDetails'));
+const Cart = React.lazy(() => import('./components/Cart'));
+
 export default class App extends Component {
   constructor(props) {
     super(props);
@@ -19,7 +21,6 @@ export default class App extends Component {
     };
     this.routerRef = React.createRef();
   }
-
 
   addProduct = (product, callback) => {
     let products = this.state.products.slice();
@@ -73,6 +74,10 @@ export default class App extends Component {
       cart[cartItem.id].amount = cart[cartItem.id].product.stock;
     }
     localStorage.setItem("cart", JSON.stringify(cart));
+    // Check if the ref is available before using it
+    if (this.routerRef.current && this.routerRef.current.history) {
+      this.routerRef.current.history.push("/cart");
+    }
     this.setState({ cart });
   };
 
@@ -188,18 +193,16 @@ export default class App extends Component {
                 )}
               </div>
             </nav>
-            <Routes>
-              <Route exact path="/" element={<ProductList />} />
-              <Route exact path="/login" element={<Login />} />
-              <Route exact path="/cart" element={<Cart />} />
-              <Route exact path="/add-product" element={<AddProduct />} />
-              <Route exact path="/products" element={<ProductList />} />
-              <Route
-                exact
-                path={`/products/${product.id}`}
-                element={<ProductDetails />}
-              />
-            </Routes>
+            <Suspense fallback={<div>Loading...</div>}>
+              <Routes>
+                <Route exact path="/" element={<ProductList />} />
+                <Route exact path="/login" element={<Login />} />
+                <Route exact path="/cart" element={<Cart />} />
+                <Route exact path="/add-product" element={<AddProduct />} />
+                <Route exact path="/products" element={<ProductList />} />
+                <Route exact path="/products/:id" element={<ProductDetails />} /> {/* New route for product details */}
+              </Routes>
+            </Suspense>
           </div>
         </Router>
       </Context.Provider>

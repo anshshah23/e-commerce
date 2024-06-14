@@ -3,6 +3,10 @@ import React from "react";
 const CartItem = props => {
   const { cartItem, cartKey } = props;
 
+  const navigateToProductDetails = () => {
+    window.location.href = `/products/${product.id}`;
+  };
+
   const { product, amount } = cartItem;
   return (
     <div className=" column is-half">
@@ -11,8 +15,8 @@ const CartItem = props => {
           <div className="media-left">
             <figure className="image is-64x64">
               <img
-                src="https://bulma.io/images/placeholders/128x128.png"
-                alt={product.shortDesc}
+                src="https://picsum.photos/200/300"
+                alt="Img"
               />
             </figure>
           </div>
@@ -28,8 +32,15 @@ const CartItem = props => {
             className="media-right"
             onClick={() => props.removeFromCart(cartKey)}
           >
-            <span className="delete is-large"></span>
+            <span className="delete is-large is-pulled-right"></span>
           </div>
+          <button
+            className="button is-success is-12 is-pulled-left"
+            onClick={navigateToProductDetails}
+            style={{ marginRight: "5px" }}
+          >
+            View Details
+          </button>
         </div>
       </div>
     </div>

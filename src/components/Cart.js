@@ -4,7 +4,12 @@ import CartItem from "./CartItem";
 
 const Cart = props => {
   const { cart } = props.context;
+  const { product } = props;
   const cartKeys = Object.keys(cart || {});
+  const navigateToProductDetails = () => {
+    window.location.href = `/products/${product.id}`;
+  };
+
   return (
     <>
       <div className="hero is-primary">

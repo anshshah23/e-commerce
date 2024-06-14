@@ -1,8 +1,12 @@
 import React from "react";
-import { Link } from "react-router-dom";
 
-const ProductItem = props => {
+const ProductItem = (props) => {
   const { product } = props;
+
+  const navigateToProductDetails = () => {
+    window.location.href = `/products/${product.id}`;
+  };
+
   return (
     <div className="column is-half">
       <div className="box">
@@ -10,7 +14,7 @@ const ProductItem = props => {
           <div className="media-left">
             <figure className="image is-64x64">
               <img
-                src="https://bulma.io/images/placeholders/128x128.png"
+                src="https://picsum.photos/200/300"
                 alt={product.shortDesc}
               />
             </figure>
@@ -20,27 +24,27 @@ const ProductItem = props => {
               {product.name}{" "}
               <span className="tag is-primary">${product.price}</span>
             </b>
-            <div>{product.shortDesc}</div>
+            <div>"{product.shortDesc}"</div>
             {product.stock > 0 ? (
               <small>{product.stock.toString() + " Available"}</small>
             ) : (
               <small className="has-text-danger">Out Of Stock</small>
             )}
             <div className="is-clearfix">
-              <Link
-                to={`/products/${product.id}`}
+              <button
                 className="button is-small is-outlined is-primary is-pulled-right"
+                onClick={navigateToProductDetails}
                 style={{ marginRight: "5px" }}
               >
                 View Details
-              </Link>
+              </button>
               <button
                 className="button is-small is-outlined is-primary is-pulled-right"
                 onClick={() =>
                   props.addToCart({
                     id: product.name,
                     product,
-                    amount: 1
+                    amount: 1,
                   })
                 }
               >

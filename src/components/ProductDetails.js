@@ -1,24 +1,45 @@
-import React, { useContext } from "react";
+import React from "react";
 import { useParams } from "react-router-dom";
-import Context from "./Context";
-import ProductItem from "./ProductItem";
-const ProductDetails = () => {
-  const { id } = useParams();
-  const { products } = useContext(Context);
-  const product = products.find(prod => prod.id === parseInt(id));
+import withContext from "../withContext";
 
-  return (
-    <div>
-      {product && (
-        <div>
-          <h2>{product.name}</h2>
-          <p>{product.description}</p>
-          <p>Price: ${product.price}</p>
-          <p>Stock: {product.stock}</p>
+const ProductDetails = (props) => {
+    const { id } = useParams();
+    const product = props.context.products.find((p) => p.id === id);
+    if (!product) {
+        return (
+            <div className="container">
+                <div className="notification is-danger">
+                    <button className="delete"></button>
+                    Product not found.
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="container">
+            <div className="columns is-centered">
+                <div className="column is-half">
+                    <br />
+                    <div className="card">
+                        <div className="card-image">
+                            <figure className="image is-4by3">
+                                <img
+                                    src="https://picsum.photos/200"
+                                    alt={product.shortDesc}
+                                />
+                            </figure>
+                        </div>
+                        <div className="card-content">
+                            <p className="title">{product.name}</p>
+                            <p className="subtitle">${product.price}</p>
+                            <div className="content">{product.shortDesc}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-      )}
-    </div>
-  );
+    );
 };
 
-export default ProductDetails;
+export default withContext(ProductDetails);

@@ -1,3 +1,14 @@
+<h1>How to run this?</h1>
+<h6>Step -0:
+  <br>type: npm install react-router-dom
+  <br>type: npm install axios
+  <br>type: npm install
+  <br><br>Step -1: Use integrated cli in the vs code after opening the root folder
+  <br>type: cd backend
+  <br>type: json-server --watch db.json\
+  <br><br>Step -2: Open another instance of the terminal.
+  <br>type: npm start
+</h6>
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
